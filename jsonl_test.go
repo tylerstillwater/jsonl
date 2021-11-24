@@ -9,11 +9,10 @@ import (
 
 func TestDecoder(t *testing.T) {
 	t.Parallel()
+	prove := proof.New(t)
 
 	const input = `{"name":"first", "value":1}
 {"name":"second", "value":2}`
-
-	prove := proof.New(t)
 
 	type testRow struct {
 		Name  string `json:"name"`
@@ -34,5 +33,20 @@ func TestDecoder(t *testing.T) {
 			lax.Equal(rows[0].Value, 1)
 			lax.Equal(rows[1].Name, "second")
 			lax.Equal(rows[1].Value, 2)
-		})
+		},
+	)
+}
+
+func TestDebug(t *testing.T) {
+	t.Parallel()
+	prove := proof.New(t)
+
+	const input = `{"name":"first", value:1}`
+	decoder := NewDecoder(strings.NewReader(input))
+	decoder.SetDebug(true)
+	for decoder.More() {
+		var row map[string]interface{}
+		prove.Err(decoder.Decode(&row))
+		prove.Equal(decoder.debugData, []string{input})
+	}
 }
