@@ -13,7 +13,9 @@ type Decoder struct {
 }
 
 func NewDecoder(r io.Reader) *Decoder {
-	return &Decoder{scanner: bufio.NewScanner(r)}
+	scanner := bufio.NewScanner(r)
+	scanner.Buffer(make([]byte, 1024*1024), 1024*1024*10)
+	return &Decoder{scanner: scanner}
 }
 
 // SetDebug sets the internal debug flag to collect debug data. This data can be
@@ -54,6 +56,11 @@ func (dec *Decoder) Decode(v interface{}) error {
 	}
 	dec.clearDebug()
 	return nil
+}
+
+// Error returns the last error encountered by the decoder.
+func (dec *Decoder) Error() error {
+	return dec.scanner.Err()
 }
 
 // clearDebug clears the debug slice.
